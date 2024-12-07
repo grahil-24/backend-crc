@@ -28,22 +28,10 @@ jobs:
         run: terraform init
         working-directory: ./terraform  
 
-      # Check if the resource is already in the Terraform state
-      - name: Check if Route 53 zone is already imported
-        id: check_import
+      # Import Route 53 zone only if it's not in state
+      - name: Terraform Import (if not already imported)
         run: |
-          if terraform state list | grep -q 'module.route53.aws_route53_zone.site_host_zone'; then
-            echo "Resource already imported"
-            echo "import=false" >> $GITHUB_ENV
-          else
-            echo "Resource not imported yet"
-            echo "import=true" >> $GITHUB_ENV
-          fi
-
-      # Import the Route 53 zone if it is not already in the state
-      - name: Terraform Import
-        if: env.import == 'true'
-        run: terraform import module.route53.aws_route53_zone.site_host_zone Z025011125N7CMVFB4813
+          terraform state list | grep -q 'module.route53.aws_route53_zone.site_host_zone' || terraform import module.route53.aws_route53_zone.site_host_zone Z025011125N7CMVFB4813
         working-directory: ./terraform
 
       - name: Terraform Apply
