@@ -22,9 +22,14 @@ jobs:
         with:
           node-version: 'lts/*'
 
-      # Install dependencies for Playwright
+      # Install dependencies for Playwright (skip browsers)
       - name: Install dependencies
         run: npm ci
+        working-directory: ./playwright  # Adjusted for your Playwright directory
+
+      # Install only WebKit browser for Playwright
+      - name: Install WebKit browser
+        run: npx playwright install webkit
         working-directory: ./playwright  # Adjusted for your Playwright directory
 
       # Run Playwright tests
@@ -58,7 +63,7 @@ jobs:
         with:
           terraform_version: 1.5.0
 
-      # Terraform initialization
+      # Terraform initializations
       - name: Terraform Init
         run: terraform init
         working-directory: ./terraform  # Adjusted for your Terraform directory
