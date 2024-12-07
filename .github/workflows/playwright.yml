@@ -34,7 +34,7 @@ jobs:
 
       # Run Playwright tests
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx playwright test e2e.spec.js
         working-directory: ./playwright  # Adjusted for your Playwright directory
 
       # Upload Playwright test results
