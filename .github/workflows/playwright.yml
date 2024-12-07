@@ -72,6 +72,10 @@ jobs:
         run: terraform init
         working-directory: ./terraform  # Adjusted for your Terraform directory
 
+      - name: Terraform Import       # import route53 zone manually, as zone's Nameservers have to be updated manually
+        run: terraform import module.route53.aws_route53_zone.site_host_zone Z00694873OF3T8STH1422
+        working-directory: ./terraform
+
       # Terraform apply to deploy the infrastructure
       - name: Terraform Apply
         run: terraform apply -auto-approve

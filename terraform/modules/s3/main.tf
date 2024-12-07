@@ -1,6 +1,7 @@
 # Create the S3 bucket for the www domain
 resource "aws_s3_bucket" "bucket_www" {
   bucket = "www.${var.domain}"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_public_access_block" "bucket_www_public_access" {
