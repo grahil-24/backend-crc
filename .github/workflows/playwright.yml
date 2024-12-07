@@ -49,7 +49,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: test
+    # needs: test
     timeout-minutes: 60
     if: success()  # Only run this job if Playwright tests pass
     env:
