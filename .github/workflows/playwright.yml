@@ -7,17 +7,44 @@ on:
     branches: [main, master]
 
 jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: 'ap-south-1'
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform  
+
+      - name: Terraform Import       # import route53 zone manually, as zone's Nameservers have to be updated manually
+        run: terraform import module.route53.aws_route53_zone.site_host_zone Z025011125N7CMVFB4813
+        working-directory: ./terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./terraform  
+
   test:
-    if : ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
-      # Checkout the code
+      
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up Node.js environment for Playwright
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,17 +53,15 @@ jobs:
       # Install dependencies for Playwright (skip browsers)
       - name: Install dependencies
         run: npm ci
-        working-directory: ./playwright  # Adjusted for your Playwright directory
+        working-directory: ./playwright 
 
-      # Install only WebKit browser for Playwright
       - name: Install WebKit browser
         run: npx playwright install webkit
-        working-directory: ./playwright  # Adjusted for your Playwright directory
+        working-directory: ./playwright 
 
-      # Run Playwright tests
       - name: Run Playwright tests
         run: npx playwright test e2e.spec.js
-        working-directory: ./playwright  # Adjusted for your Playwright directory
+        working-directory: ./playwright 
 
       # Upload Playwright test results
       - name: Upload Playwright test results
@@ -46,38 +71,3 @@ jobs:
           name: playwright-report
           path: ./playwright/playwright-report/
           retention-days: 30
-
-  deploy:
-    runs-on: ubuntu-latest
-    # needs: test
-    timeout-minutes: 60
-    if: success()  # Only run this job if Playwright tests pass
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: 'ap-south-1'
-      
-    steps:
-      # Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Set up Terraform
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.5.0
-
-      # Terraform initializations
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./terraform  # Adjusted for your Terraform directory
-
-      - name: Terraform Import       # import route53 zone manually, as zone's Nameservers have to be updated manually
-        run: terraform import module.route53.aws_route53_zone.site_host_zone Z025011125N7CMVFB4813
-        working-directory: ./terraform
-
-      # Terraform apply to deploy the infrastructure
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-        working-directory: ./terraform  # Adjusted for your Terraform directory

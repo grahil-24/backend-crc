@@ -1,3 +1,14 @@
+terraform {
+  backend "s3" {
+    bucket         = "tfstate-mgnt"
+    key            = "state/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "terraform-lock"
+    encrypt        = true
+  }
+}
+
+
 module "route53" {
   source      = "./modules/route53"
   domain_name = var.domain
